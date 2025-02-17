@@ -31,7 +31,7 @@ price_spot = st.sidebar.slider("Spot Price S (in $)", 50, 150, 100)
 price_strike = st.sidebar.slider("Strike Price K (in $)", 50, 150, 100)
 maturity = st.sidebar.slider("Time to maturity T (in years)", 0.1, 2.0, 1.0, 0.1)
 risk_free_rate = st.sidebar.slider("Risk-free rate r ", 0.0, 0.1, 0.05, 0.01)
-volatility = st.sidebar.slider("Volatility sigma ", 0.0, 1.0, 0.2, 0.01)
+volatility = st.sidebar.slider("Volatility sigma ", 0.1, 1.0, 0.2, 0.01)
 option_type = st.sidebar.radio("Option  Type", ["Call", "Put"])
 
 # Calculate the option price 
