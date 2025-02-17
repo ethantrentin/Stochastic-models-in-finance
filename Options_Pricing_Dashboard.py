@@ -1,9 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
-import panel as pn
-
-pn.extension() # This is needed to display the panel 
+import streamlit as st
 
 # First let's define a Black-Scholes function
 def black_scholes_european(S,K,T,r,sigma, option_type="call"):
@@ -25,36 +23,40 @@ def greeks_option(S,K,T,r,sigma):
     rho = K*T*np.exp(-r*T)*norm.cdf(d2)
     return delta, gamma, theta, vega, rho
 
-# We can now create widgets for user inputs
-price_spot = pn.widgets.FloatSlider(name="Spot Price S (in $)", start=50, end=150, value=100, step=1)
-price_strike = pn.widgets.FloatSlider(name="Strike Price K (in $)", start=50, end=150, value=100, step=1)
-maturity = pn.widgets.FloatSlider(name="Time to maturity T (in years)", start=0.1, end=2.0, value=1.0, step=0.1)
-risk_free_rate = pn.widgets.FloatSlider(name="Risk-free rate r ", start=0.0, end=0.1, value=0.05, step=0.01)
-volatility = pn.widgets.FloatSlider(name="Volatility sigma ", start=0.0, end=1.0, value=0.2, step=0.01)
-option_type = pn.widgets.RadioButtonGroup(name="Option  Type", options=["Call", "Put"], button_type="success")
+# We can now start to define our dashboard 
+st.title("Options Pricing Dashboard")
 
-# We are updating the dashboard 
-@pn.depends(price_spot.param.value, price_strike.param.value, maturity.param.value, risk_free_rate.param.value, volatility.param.value, option_type.param.value)
+st.sidebar.header("Option Calibration Parameters")
+price_spot = st.sidebar.slider("Spot Price S (in $)", 50, 150, 100)
+price_strike = st.sidebar.slider("Strike Price K (in $)", 50, 150, 100)
+maturity = st.sidebar.slider("Time to maturity T (in years)", 0.1, 2.0, 1.0, 0.1)
+risk_free_rate = st.sidebar.slider("Risk-free rate r ", 0.0, 0.1, 0.05, 0.01)
+volatility = st.sidebar.slider("Volatility sigma ", 0.0, 1.0, 0.2, 0.01)
+option_type = st.sidebar.radio("Option  Type", ["Call", "Put"])
 
-def update(S, K, T, r, sigma, option_type):
-    # Calculation of the option price
-    option_price = black_scholes_european(S, K, T, r, sigma, option_type.lower())
-    # Calculation of the Greeks
-    delta, gamma, theta, vega, rho = greeks_option(S, K, T, r, sigma)
-    # Volatility Smile 
-    prices_strike_linspace = np.linspace(50,150,100)
-    volatility_implied = [volatility for _ in prices_strike_linspace]
-    # Plot the Volatility Smile
-    plt.figure(figsize=(10,6))
-    plt.plot(prices_strike_linspace, volatility_implied, label="Implied Volatility")
-    plt.xlabel("Strike Price")
-    plt.ylabel("Implied Volatility")
-    plt.title("Volatility Smile")
-    plt.legend()
-    # Return the results and plot
-    return pn.Column(f"### {option_type} Option Price : ${option_price:.2f}", f"**Delta**: {delta:.2f}", f"**Gamma**: {gamma:.2f}", f"**Vega**: {vega:.2f}", f"**Theta**: {theta:.2f}", f"**Rho**: {rho:.2f}", plt.gcf())
+# Calculate the option price 
+option_price = black_scholes_european(price_spot, price_strike, maturity, risk_free_rate, volatility, option_type.lower())
+st.write(f"### {option_type} Option Price : ${option_price:.2f}")
 
-# Layout the dashboard 
-dashboard = pn.column(pn.Row(price_spot, price_strike), pn.Row(maturity, risk_free_rate), pn.Row(volatility, option_type), update)
+# Calculate the Greeks
+delta, gamma, theta, vega, rho = greeks_option(price_spot, price_strike, maturity, risk_free_rate, volatility)
+st.write("### Greeks")
+st.write(f"**Delta**: {delta:.2f}")
+st.write(f"**Gamma**: {gamma:.2f}")
+st.write(f"**Vega**: {vega:.2f}")
+st.write(f"**Theta**: {theta:.2f}")
+st.write(f"**Rho**: {rho:.2f}")
 
-dashboard.servable()
+# Volatility Smile 
+st.write("### Volatility Smile")
+prices_strike_linspace = np.linspace(50,150,100)
+volatility_implied = [volatility for _ in prices_strike_linspace]
+
+# Plot Smile
+plt.figure(figsize=(10,6))
+plt.plot(prices_strike_linspace, volatility_implied, label="Implied Volatility")
+plt.xlabel("Strike Price")
+plt.ylabel("Implied Volatility")
+plt.title("Volatility Smile")
+plt.legend()
+st.pyplot(plt)
