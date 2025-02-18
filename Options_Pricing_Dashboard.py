@@ -18,9 +18,9 @@ def greeks_option(S,K,T,r,sigma):
     d2 = d1 - sigma*np.sqrt(T)
     delta = norm.cdf(d1) # Partial derivative with respect to underlying asset
     gamma = norm.pdf(d1)/(S*sigma*np.sqrt(T)) # Second partial derivative with respect to underlying asset
-    theta = -(sigma*S*norm.pdf(d1))/(2*np.sqrt(T)) - r*K*np.exp(-r*T)*norm.cdf(d2)
-    vega = S*np.sqrt(T)*norm.pdf(d1)
-    rho = K*T*np.exp(-r*T)*norm.cdf(d2)
+    theta = -(sigma*S*norm.pdf(d1))/(2*np.sqrt(T)) - r*K*np.exp(-r*T)*norm.cdf(d2) # Derivative with respect to time
+    vega = S*np.sqrt(T)*norm.pdf(d1) # Derivative with respect to sigma
+    rho = K*T*np.exp(-r*T)*norm.cdf(d2) # Derivative with respect to r 
     return delta, gamma, theta, vega, rho
 
 # We can now start to define our dashboard 
